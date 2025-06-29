@@ -15,7 +15,7 @@ router.beforeEach(async (to, from, next) => {
       // 3. 如果用户信息未加载，先获取用户信息
       if (!userStore.userInfo) {
         try {
-          await userStore.fetchUserInfo()
+          await userStore.fetchProfile()
           // 4. 动态添加权限路由（如需）
           // await userStore.generateRoutes()
         } catch (error) {

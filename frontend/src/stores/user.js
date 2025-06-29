@@ -19,14 +19,16 @@ export const useUserStore = defineStore('user', {
       this.token = res.token
       this.role = res.role
       localStorage.setItem('token', res.token)
+      await this.fetchProfile()
     },
 
     async fetchProfile() {
       this.userInfo = await getProfile()
-      this.role = this.userInfo.role
+      this.role = this.userInfo.role // 确保role与用户信息同步
     },
 
     logout() {
+      logout() // 调用API登出
       this.token = null
       this.userInfo = null
       this.role = null
