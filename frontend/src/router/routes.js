@@ -2,12 +2,7 @@
 export default [
   {
     path: '/',
-    name: 'Login',
-    component: () => import('@/views/Login.vue'),
-    meta: {
-      guestOnly: true,
-      title: '登录'
-    }
+    redirect: '/login', // 重定向到登录页
   },
   {
     path: '/login',

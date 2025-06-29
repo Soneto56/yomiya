@@ -1,19 +1,34 @@
 // src/api/auth.js
+import request from '@/utils/request';
+
+// 登录接口
 export const login = async (credentials) => {
-  // 实现登录逻辑
-  return {
-    token: 'example-token',
-    role: 'user'
-  };
+  try {
+    const res = await request.post('/api/login', credentials);
+    return res.data;
+  } catch (error) {
+    console.error('登录请求失败:', error);
+    throw error;
+  }
 };
 
+// 登出接口
 export const logout = async () => {
-  // 实现登出逻辑
+  try {
+    await request.post('/api/logout');
+  } catch (error) {
+    console.error('登出请求失败:', error);
+    throw error;
+  }
 };
 
+// 获取用户信息接口
 export const getProfile = async () => {
-  // 实现获取用户信息逻辑
-  return {
-    role: 'user'
-  };
+  try {
+    const res = await request.get('/api/profile');
+    return res.data;
+  } catch (error) {
+    console.error('获取用户信息请求失败:', error);
+    throw error;
+  }
 };

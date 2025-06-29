@@ -34,23 +34,6 @@
           />
         </el-form-item>
 
-        <el-form-item prop="captcha" v-if="showCaptcha">
-          <div class="captcha-container">
-            <el-input
-              v-model="form.captcha"
-              placeholder="请输入验证码"
-              prefix-icon="Key"
-              style="flex: 1"
-            />
-            <img
-              :src="captchaImage"
-              class="captcha-image"
-              @click="refreshCaptcha"
-              alt="验证码"
-            />
-          </div>
-        </el-form-item>
-
         <el-form-item>
           <el-button
             type="primary"
@@ -94,41 +77,35 @@
 </template>
 
 <script setup>
-import { ref, onMounted } from 'vue'
-import { useRouter } from 'vue-router'
-import { useUserStore } from '@/stores/user'
-import { ElMessage } from 'element-plus'
-import { getCaptcha } from '@/api/auth'
+import { ref, onMounted } from 'vue';
+import { useRouter } from 'vue-router';
+import { useUserStore } from '@/stores/user';
+import { ElMessage } from 'element-plus';
+import request from '@/utils/request';
 
-const router = useRouter()
-const userStore = useUserStore()
-const loginFormRef = ref(null)
+const router = useRouter();
+const userStore = useUserStore();
+const loginFormRef = ref(null);
 
 // 登录表单
 const form = ref({
   username: localStorage.getItem('rememberedUsername') || '',
   password: '',
-  captcha: ''
-})
+});
 
 // 记住我功能
-const rememberMe = ref(localStorage.getItem('rememberMe') === 'true')
-
-// 验证码相关
-const showCaptcha = ref(false)
-const captchaImage = ref('')
-const captchaKey = ref('')
+const rememberMe = ref(localStorage.getItem('rememberMe') === 'true');
 
 // 忘记密码相关
-const forgotDialogVisible = ref(false)
+const forgotDialogVisible = ref(false);
 const forgotForm = ref({
   username: '',
   email: '',
   verifyCode: ''
-})
+});
 
-const loading = ref(false)
-const errorCount = ref(0)
+const loading = ref(false);
+const errorCount = ref(0);
 
 // 验证规则
 const rules = {
@@ -138,104 +115,77 @@ const rules = {
   ],
   password: [
     { required: true, message: '请输入密码', trigger: 'blur' },
-    { min: 6, max: 20, message: '密码长度在6-20个字符', trigger: 'blur' }
-  ],
-  captcha: [
-    { required: true, message: '请输入验证码', trigger: 'blur' },
-    { len: 4, message: '验证码长度为4位', trigger: 'blur' }
+    { min: 6, max: 20, message: '密码长度在6 - 20个字符', trigger: 'blur' }
   ]
-}
-
-// 初始化验证码
-const initCaptcha = async () => {
-  try {
-    const res = await getCaptcha()
-    captchaImage.value = res.image
-    captchaKey.value = res.key
-    showCaptcha.value = true
-  } catch (error) {
-    console.error('获取验证码失败:', error)
-  }
-}
-
-// 刷新验证码
-const refreshCaptcha = () => {
-  initCaptcha()
-  form.value.captcha = ''
-}
+};
 
 // 重置字段错误状态
 const resetFieldError = (field) => {
   if (loginFormRef.value) {
-    loginFormRef.value.clearValidate(field)
+    loginFormRef.value.clearValidate(field);
   }
-}
+};
 
 // 处理登录
 const handleLogin = async () => {
   try {
-    await loginFormRef.value.validate()
-    loading.value = true
+    await loginFormRef.value.validate();
+    loading.value = true;
 
     // 记住用户名
     if (rememberMe.value) {
-      localStorage.setItem('rememberedUsername', form.value.username)
-      localStorage.setItem('rememberMe', 'true')
+      localStorage.setItem('rememberedUsername', form.value.username);
+      localStorage.setItem('rememberMe', 'true');
     } else {
-      localStorage.removeItem('rememberedUsername')
-      localStorage.removeItem('rememberMe')
+      localStorage.removeItem('rememberedUsername');
+      localStorage.removeItem('rememberMe');
     }
 
     // 登录请求
     await userStore.login({
       username: form.value.username,
-      password: form.value.password,
-      captcha: form.value.captcha,
-      captchaKey: captchaKey.value
-    })
+      password: form.value.password
+    });
 
     // 登录成功后跳转
-    const redirect = router.currentRoute.value.query.redirect || '/dashboard'
-    router.push(redirect)
+    const redirect = router.currentRoute.value.query.redirect || '/dashboard';
+    router.push(redirect);
 
   } catch (error) {
     if (error !== 'cancel') {
-      errorCount.value++
-      // 错误3次后显示验证码
-      if (errorCount.value >= 3 && !showCaptcha.value) {
-        initCaptcha()
-      }
-      ElMessage.error(error.response?.data?.message || '登录失败，请检查账号密码')
+      errorCount.value++;
+      ElMessage.error(error.response?.data?.message || '登录失败，请检查账号密码');
     }
   } finally {
-    loading.value = false
+    loading.value = false;
   }
-}
+};
 
 // 忘记密码相关方法
 const showForgotDialog = () => {
-  forgotForm.value.username = form.value.username
-  forgotDialogVisible.value = true
-}
+  forgotForm.value.username = form.value.username;
+  forgotDialogVisible.value = true;
+};
 
 const handleResetPassword = async () => {
   try {
-    // 调用API重置密码
-    ElMessage.success('密码重置邮件已发送，请查收')
-    forgotDialogVisible.value = false
+    // 调用 API 重置密码
+    await request.post('/api/reset-password', forgotForm.value);
+    ElMessage.success('密码重置邮件已发送，请查收');
+    forgotDialogVisible.value = false;
   } catch (error) {
-    ElMessage.error('密码重置失败: ' + (error.response?.data?.message || error.message))
+    ElMessage.error('密码重置失败: ' + (error.response?.data?.message || error.message));
   }
-}
+};
 
 onMounted(() => {
   // 如果有记住的用户名，自动聚焦密码框
   if (form.value.username) {
     setTimeout(() => {
-      document.querySelector('input[type=password]')?.focus()
-    }, 100)
+      document.querySelector('input[type=password]')?.focus();
+    }, 100);
   }
-})
+});
 </script>
 
 <style scoped>
@@ -269,19 +219,6 @@ onMounted(() => {
   margin: 0;
   color: #333;
   font-size: 24px;
-}
-
-.captcha-container {
-  display: flex;
-  align-items: center;
-  width: 100%;
-}
-
-.captcha-image {
-  height: 40px;
-  margin-left: 10px;
-  cursor: pointer;
-  border-radius: 4px;
 }
 
 .login-footer {

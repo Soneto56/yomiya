@@ -37,5 +37,8 @@ export default defineConfig({
     rollupOptions: {
       external: ['web-trans-setting'] // 排除异常模块
     }
+  },
+  optimizeDeps: {
+    include: ['axios'] // 强制预构建axios
   }
 })

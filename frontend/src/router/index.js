@@ -10,4 +10,10 @@ const router = createRouter({
   }
 })
 
+// 添加路由钩子，用于调试
+router.beforeEach((to, from, next) => {
+  console.log(`即将导航到: ${to.path}`)
+  next()
+})
+
 export default router

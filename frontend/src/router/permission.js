@@ -22,7 +22,7 @@ router.beforeEach(async (to, from, next) => {
           // token失效处理
           userStore.logout()
           ElMessage.error('登录已过期，请重新登录')
-          return next(`/login?redirect=${to.path}`)
+          return next(`/login?redirect=${encodeURIComponent(to.path)}`)
         }
       }
       // 5. 检查角色权限
@@ -32,7 +32,7 @@ router.beforeEach(async (to, from, next) => {
       next()
     } else {
       // 未登录且需要认证的路由
-      next(`/login?redirect=${to.path}`)
+      next(`/login?redirect=${encodeURIComponent(to.path)}`)
     }
   } else if (to.meta.guestOnly && userStore.token) {
     // 已登录用户禁止访问guest页面（如登录页）
