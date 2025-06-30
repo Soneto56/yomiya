@@ -1,11 +1,14 @@
+// src/stores/user.js
 import { defineStore } from 'pinia'
 import { login, logout, getProfile } from '@/api/auth'
+import { ElMessage } from 'element-plus'
 
 export const useUserStore = defineStore('user', {
   state: () => ({
     token: localStorage.getItem('token') || null,
     userInfo: null,
-    role: null
+    role: null,
+    loading: false
   }),
 
   getters: {
@@ -14,29 +17,55 @@ export const useUserStore = defineStore('user', {
   },
 
   actions: {
-    async login(credentials) {
-      const res = await login(credentials)
-      this.token = res.token
-      this.role = res.role
-      localStorage.setItem('token', res.token)
-      await this.fetchProfile()
+    async login(username) {
+      this.loading = true
+      try {
+        const res = await login({ username })
+        this.token = res.token
+        this.role = res.role
+        localStorage.setItem('token', res.token)
+        await this.fetchProfile()
+        return true
+      } catch (error) {
+        ElMessage.error(error.response?.data?.message || '登录失败，请检查学号')
+        return false
+      } finally {
+        this.loading = false
+      }
     },
 
     async fetchProfile() {
-      this.userInfo = await getProfile()
-      this.role = this.userInfo.role // 确保role与用户信息同步
+      try {
+        const res = await getProfile()
+        this.userInfo = res
+        this.role = res.role
+      } catch (error) {
+        console.error('获取用户信息失败:', error)
+        // 处理token无效的情况
+        if (error.response?.status === 401) {
+          this.logout()
+        }
+      }
     },
 
-    logout() {
-      logout() // 调用API登出
-      this.token = null
-      this.userInfo = null
-      this.role = null
-      localStorage.removeItem('token')
+    async logout() {
+      try {
+        await logout()
+      } catch (error) {
+        console.error('API登出失败:', error)
+        // 即使API失败，也清除本地状态
+      } finally {
+        this.token = null
+        this.userInfo = null
+        this.role = null
+        localStorage.removeItem('token')
+      }
     },
 
-    initialize() {
-      if (this.token) this.fetchProfile()
+    async initialize() {
+      if (this.token) {
+        await this.fetchProfile()
+      }
     }
   }
 })

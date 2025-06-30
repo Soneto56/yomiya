@@ -30,4 +30,9 @@ public class StudentService {
     public void deleteStudent(String studentId) {
         studentRepository.deleteById(studentId);
     }
+
+    // 新增学生注册方法
+    public Student registerStudent(Student student) {
+        return saveStudent(student);
+    }
 }

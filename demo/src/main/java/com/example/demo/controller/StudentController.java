@@ -3,6 +3,8 @@ package com.example.demo.controller;
 import com.example.demo.entity.Student;
 import com.example.demo.service.StudentService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
@@ -53,5 +55,12 @@ public class StudentController {
     public String deleteStudent(@PathVariable String studentId) {
         studentService.deleteStudent(studentId);
         return "redirect:/students";
+    }
+
+    // 新增学生注册接口
+    @PostMapping("/register")
+    public ResponseEntity<Student> registerStudent(@RequestBody Student student) {
+        Student registeredStudent = studentService.registerStudent(student);
+        return new ResponseEntity<>(registeredStudent, HttpStatus.CREATED);
     }
 }

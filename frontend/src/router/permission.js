@@ -3,7 +3,8 @@ import router from './index'
 import { useUserStore } from '@/stores/user'
 import { ElMessage } from 'element-plus'
 
-const whiteList = ['/login', '/register'] // 免登录白名单
+// 更新白名单，添加注册页面
+const whiteList = ['/login', '/register']
 
 router.beforeEach(async (to, from, next) => {
   const userStore = useUserStore()
@@ -35,7 +36,7 @@ router.beforeEach(async (to, from, next) => {
       next(`/login?redirect=${encodeURIComponent(to.path)}`)
     }
   } else if (to.meta.guestOnly && userStore.token) {
-    // 已登录用户禁止访问guest页面（如登录页）
+    // 已登录用户禁止访问guest页面（如登录页、注册页）
     next('/')
   } else {
     // 放行非权限路由

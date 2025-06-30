@@ -14,6 +14,15 @@ export default [
     }
   },
   {
+    path: '/register',
+    name: 'Register',
+    component: () => import('@/views/Register.vue'),
+    meta: {
+      guestOnly: true,
+      title: '注册'
+    }
+  },
+  {
     path: '/courses',
     name: 'CourseList',
     component: () => import('@/views/CourseList.vue'),
@@ -73,4 +82,4 @@ export default [
     path: '/:catchAll(.*)', // 匹配所有未定义的路由
     redirect: '/404'
   }
-]
+];
