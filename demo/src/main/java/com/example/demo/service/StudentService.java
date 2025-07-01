@@ -1,10 +1,10 @@
 package com.example.demo.service;
 
-import com.example.demo.entity.Student;
+import com.example.demo.entity.Student; // 添加这行
 import com.example.demo.repository.StudentRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-
+import com.example.demo.entity.Student; // 确保添加这行
 import java.util.List;
 import java.util.Optional;
 
@@ -18,9 +18,8 @@ public class StudentService {
         return studentRepository.findAll();
     }
 
-    public Student getStudentById(String studentId) {
-        Optional<Student> optionalStudent = studentRepository.findById(studentId);
-        return optionalStudent.orElse(null);
+    public Optional<Student> getStudentById(String studentId) {
+        return studentRepository.findById(studentId);
     }
 
     public Student saveStudent(Student student) {
@@ -31,8 +30,15 @@ public class StudentService {
         studentRepository.deleteById(studentId);
     }
 
-    // 新增学生注册方法
     public Student registerStudent(Student student) {
         return saveStudent(student);
+    }
+
+    public boolean existsByEmail(String email) {
+        return studentRepository.existsByEmail(email);
+    }
+
+    public Optional<Student> findByEmail(String email) {
+        return studentRepository.findByEmail(email);
     }
 }
